@@ -1,0 +1,101 @@
+
+说明:
+
+获取设备信息, 可以用于验证账号密码是否正确; 同时也可以获取网络摄像头对应的数据
+
+url:
+    http://192.168.1.86/onvif/device_service
+req:
+
+headers:
+    Content-Type: application/soap+xml; charset=utf-8
+
+<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"><s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><GetDeviceInformation xmlns="http://www.onvif.org/ver10/device/wsdl"/></s:Body></s:Envelope>
+
+response:
+
+headers:
+    Content-Type: application/soap+xml; charset=utf-8
+    code: 400 Bad Request
+Content:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope" xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsdd="http://schemas.xmlsoap.org/ws/2005/04/discovery" xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa5="http://www.w3.org/2005/08/addressing" xmlns:xmime="http://tempuri.org/xmime.xsd" xmlns:xop="http://www.w3.org/2004/08/xop/include" xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2" xmlns:wstop="http://docs.oasis-open.org/wsn/t-1" xmlns:wsrfr="http://docs.oasis-open.org/wsrf/r-2" xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:ter="http://www.onvif.org/ver10/error" xmlns:tns1="http://www.onvif.org/ver10/topics" xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:trt="http://www.onvif.org/ver10/media/wsdl" xmlns:tev="http://www.onvif.org/ver10/events/wsdl" xmlns:tdn="http://www.onvif.org/ver10/network/wsdl" xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl" xmlns:trp="http://www.onvif.org/ver10/replay/wsdl" xmlns:tan="http://www.onvif.org/ver20/analytics/wsdl"><SOAP-ENV:Body><SOAP-ENV:Fault><SOAP-ENV:Code><SOAP-ENV:Value>SOAP-ENV:Sender</SOAP-ENV:Value><SOAP-ENV:Subcode><SOAP-ENV:Value>ter:NotAuthorized</SOAP-ENV:Value></SOAP-ENV:Subcode></SOAP-ENV:Code><SOAP-ENV:Reason><SOAP-ENV:Text xml:lang="en">Authority failure</SOAP-ENV:Text></SOAP-ENV:Reason></SOAP-ENV:Fault></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+--------------------------
+
+req:
+
+<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"><s:Header><wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"><wsse:UsernameToken><wsse:Username>admin</wsse:Username><wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">2ypHB/HLJ1UGnWXHIwFnQfrnN98=</wsse:Password><wsse:Nonce>TcVzdNMEGGdoUdksst2w+g==</wsse:Nonce><wsu:Created>2019-08-30T05:53:33Z</wsu:Created></wsse:UsernameToken></wsse:Security></s:Header><s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><GetDeviceInformation xmlns="http://www.onvif.org/ver10/device/wsdl"/></s:Body></s:Envelope>
+
+--
+  多出来的部分:
+  <s:Header>
+    <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+      <wsse:UsernameToken>
+        // username
+        <wsse:Username>admin</wsse:Username>
+        // password
+        <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">2ypHB/HLJ1UGnWXHIwFnQfrnN98=</wsse:Password>
+        // nonce
+        <wsse:Nonce>TcVzdNMEGGdoUdksst2w+g==</wsse:Nonce>
+        // time
+        <wsu:Created>2019-08-30T05:53:33Z</wsu:Created>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </s:Header>
+
+  time:
+
+       private static String getUTCTime() {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-d'T'HH:mm:ss'Z'");
+            sdf.setTimeZone(new SimpleTimeZone(2, "UTC"));
+            Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+            return sdf.format(cal.getTime());
+        }
+
+  password:
+
+         /**
+          * Method to encrypt the password for Digest authentication
+          * 这里的onoce是一个随机int数
+          * utcTime是上面生成的时间
+          *
+          */
+         private static String getEncryptedPassword(String nonce, String utcTime, String password) {
+             String beforeEncryption = nonce + utcTime + password;
+             byte[] encryptedRaw;
+             try {
+                 MessageDigest SHA1  = MessageDigest.getInstance("SHA1");
+                 SHA1.reset();
+                 SHA1.update(beforeEncryption.getBytes());
+                 encryptedRaw = SHA1.digest();
+             } catch (NoSuchAlgorithmException e) {
+                 e.printStackTrace();
+                 return null;
+             }
+
+             return Base64.encodeToString(encryptedRaw, Base64.NO_WRAP);
+         }
+
+     nonce:
+
+          private static String getEncryptedNonce(String nonce) {
+                 return Base64.encodeToString(nonce.getBytes(), Base64.NO_WRAP);
+           }
+--
+
+response:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope" xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsdd="http://schemas.xmlsoap.org/ws/2005/04/discovery" xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa5="http://www.w3.org/2005/08/addressing" xmlns:xmime="http://tempuri.org/xmime.xsd" xmlns:xop="http://www.w3.org/2004/08/xop/include" xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2" xmlns:wstop="http://docs.oasis-open.org/wsn/t-1" xmlns:wsrfr="http://docs.oasis-open.org/wsrf/r-2" xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:ter="http://www.onvif.org/ver10/error" xmlns:tns1="http://www.onvif.org/ver10/topics" xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:trt="http://www.onvif.org/ver10/media/wsdl" xmlns:tev="http://www.onvif.org/ver10/events/wsdl" xmlns:tdn="http://www.onvif.org/ver10/network/wsdl" xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl" xmlns:trp="http://www.onvif.org/ver10/replay/wsdl" xmlns:tan="http://www.onvif.org/ver20/analytics/wsdl"><SOAP-ENV:Header></SOAP-ENV:Header><SOAP-ENV:Body><tds:GetDeviceInformationResponse><tds:Manufacturer>TP-Link</tds:Manufacturer><tds:Model>TL-IPC525K(P)-WD4</tds:Model><tds:FirmwareVersion>1.0.4 Build 180713 Rel.69411n</tds:FirmwareVersion><tds:SerialNumber>12344321</tds:SerialNumber><tds:HardwareId>1.0</tds:HardwareId></tds:GetDeviceInformationResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+ 结果:
+
+    <tds:GetDeviceInformationResponse>
+       <tds:Manufacturer>TP-Link</tds:Manufacturer>
+       <tds:Model>TL-IPC525K(P)-WD4</tds:Model>
+       <tds:FirmwareVersion>1.0.4 Build 180713 Rel.69411n</tds:FirmwareVersion>
+       <tds:SerialNumber>12344321</tds:SerialNumber>
+       <tds:HardwareId>1.0</tds:HardwareId>
+     </tds:GetDeviceInformationResponse>

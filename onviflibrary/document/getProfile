@@ -1,0 +1,188 @@
+
+http://192.168.1.86:2020/onvif/service
+
+req:
+
+<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope"><s:Header><wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"><wsse:UsernameToken><wsse:Username>admin</wsse:Username><wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">bBASqkxcfpqyxQrYoDLvBXUcLuo=</wsse:Password><wsse:Nonce>Sx5CXpuOY9yNJ6DX9HfdeA==</wsse:Nonce><wsu:Created>2019-08-30T06:44:46Z</wsu:Created></wsse:UsernameToken></wsse:Security></s:Header><s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><GetProfiles xmlns="http://www.onvif.org/ver10/media/wsdl"/></s:Body></s:Envelope>
+
+<?xml version="1.0" encoding="utf-8"?>
+
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
+  <s:Header>
+    <wsse:Security xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+      <wsse:UsernameToken>
+        <wsse:Username>admin</wsse:Username>
+        <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">bBASqkxcfpqyxQrYoDLvBXUcLuo=</wsse:Password>
+        <wsse:Nonce>Sx5CXpuOY9yNJ6DX9HfdeA==</wsse:Nonce>
+        <wsu:Created>2019-08-30T06:44:46Z</wsu:Created>
+      </wsse:UsernameToken>
+    </wsse:Security>
+  </s:Header>
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetProfiles xmlns="http://www.onvif.org/ver10/media/wsdl"></GetProfiles>
+  </s:Body>
+</s:Envelope>
+
+resp:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope" xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsdd="http://schemas.xmlsoap.org/ws/2005/04/discovery" xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa5="http://www.w3.org/2005/08/addressing" xmlns:xmime="http://tempuri.org/xmime.xsd" xmlns:xop="http://www.w3.org/2004/08/xop/include" xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2" xmlns:wstop="http://docs.oasis-open.org/wsn/t-1" xmlns:wsrfr="http://docs.oasis-open.org/wsrf/r-2" xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:ter="http://www.onvif.org/ver10/error" xmlns:tns1="http://www.onvif.org/ver10/topics" xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:trt="http://www.onvif.org/ver10/media/wsdl" xmlns:tev="http://www.onvif.org/ver10/events/wsdl" xmlns:tdn="http://www.onvif.org/ver10/network/wsdl" xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl" xmlns:trp="http://www.onvif.org/ver10/replay/wsdl" xmlns:tan="http://www.onvif.org/ver20/analytics/wsdl"><SOAP-ENV:Header></SOAP-ENV:Header><SOAP-ENV:Body><trt:GetProfilesResponse><trt:Profiles fixed="true" token="profile_1"><tt:Name>mainStream</tt:Name><tt:VideoSourceConfiguration token="vsconf"><tt:Name>vsconf</tt:Name><tt:UseCount>2</tt:UseCount><tt:SourceToken>raw_vs1</tt:SourceToken><tt:Bounds height="1080" width="1920" y="0" x="0"></tt:Bounds></tt:VideoSourceConfiguration><tt:VideoEncoderConfiguration token="main"><tt:Name>VideoEncoder_1</tt:Name><tt:UseCount>1</tt:UseCount><tt:Encoding>H264</tt:Encoding><tt:Resolution><tt:Width>1920</tt:Width><tt:Height>1080</tt:Height></tt:Resolution><tt:Quality>3</tt:Quality><tt:RateControl><tt:FrameRateLimit>20</tt:FrameRateLimit><tt:EncodingInterval>1</tt:EncodingInterval><tt:BitrateLimit>4096</tt:BitrateLimit></tt:RateControl><tt:H264><tt:GovLength>25</tt:GovLength><tt:H264Profile>Main</tt:H264Profile></tt:H264><tt:Multicast><tt:Address><tt:Type>IPv4</tt:Type><tt:IPv4Address>224.0.1.0</tt:IPv4Address></tt:Address><tt:Port>10000</tt:Port><tt:TTL>64</tt:TTL><tt:AutoStart>false</tt:AutoStart></tt:Multicast><tt:SessionTimeout>PT0H1M5S</tt:SessionTimeout></tt:VideoEncoderConfiguration><tt:VideoAnalyticsConfiguration token="VideoAnalyticsToken"><tt:Name>VideoAnalyticsName</tt:Name><tt:UseCount>2</tt:UseCount><tt:AnalyticsEngineConfiguration><tt:AnalyticsModule Name="MyCellMotionModule" Type="tt:CellMotionEngine"><tt:Parameters><tt:SimpleItem Value="medium" Name="Sensitivity"></tt:SimpleItem><tt:SimpleItem Value="on" Name="Enabled"></tt:SimpleItem><tt:ElementItem Name="Layout"><tt:CellLayout Rows="18" Columns="22"><tt:Transformation><tt:Translate y="-1" x="-1"></tt:Translate><tt:Scale y="0.109999999" x="0.0900000036"></tt:Scale></tt:Transformation></tt:CellLayout></tt:ElementItem></tt:Parameters></tt:AnalyticsModule><tt:AnalyticsModule Name="MyTamperDetecModule" Type="tt:TamperEngine"><tt:Parameters><tt:SimpleItem Value="medium" Name="Sensitivity"></tt:SimpleItem><tt:SimpleItem Value="off" Name="Enabled"></tt:SimpleItem></tt:Parameters></tt:AnalyticsModule></tt:AnalyticsEngineConfiguration><tt:RuleEngineConfiguration><tt:Rule Name="MyMotionDetectorRule" Type="tt:CellMotionDetector"><tt:Parameters><tt:SimpleItem Value="[ { &quot;region_info_1&quot;: { &quot;.name&quot;: &quot;region_info_1&quot;, &quot;.type&quot;: &quot;region_info&quot;, &quot;x_coor&quot;: &quot;0&quot;, &quot;y_coor&quot;: &quot;0&quot;, &quot;height&quot;: &quot;10000&quot;, &quot;.index&quot;: 1, &quot;.anonymous&quot;: false, &quot;width&quot;: &quot;10000&quot; } } ]" Name="ActiveCells"></tt:SimpleItem></tt:Parameters></tt:Rule><tt:Rule Name="MyTamperDetectorRule" Type="tt:TamperDetector"><tt:Parameters></tt:Parameters></tt:Rule></tt:RuleEngineConfiguration></tt:VideoAnalyticsConfiguration></trt:Profiles><trt:Profiles fixed="true" token="profile_2"><tt:Name>minorStream</tt:Name><tt:VideoSourceConfiguration token="vsconf"><tt:Name>vsconf</tt:Name><tt:UseCount>2</tt:UseCount><tt:SourceToken>raw_vs1</tt:SourceToken><tt:Bounds height="1080" width="1920" y="0" x="0"></tt:Bounds></tt:VideoSourceConfiguration><tt:VideoEncoderConfiguration token="minor"><tt:Name>VideoEncoder_2</tt:Name><tt:UseCount>1</tt:UseCount><tt:Encoding>H264</tt:Encoding><tt:Resolution><tt:Width>640</tt:Width><tt:Height>480</tt:Height></tt:Resolution><tt:Quality>3</tt:Quality><tt:RateControl><tt:FrameRateLimit>20</tt:FrameRateLimit><tt:EncodingInterval>1</tt:EncodingInterval><tt:BitrateLimit>512</tt:BitrateLimit></tt:RateControl><tt:H264><tt:GovLength>25</tt:GovLength><tt:H264Profile>Main</tt:H264Profile></tt:H264><tt:Multicast><tt:Address><tt:Type>IPv4</tt:Type><tt:IPv4Address>224.0.1.0</tt:IPv4Address></tt:Address><tt:Port>10002</tt:Port><tt:TTL>64</tt:TTL><tt:AutoStart>false</tt:AutoStart></tt:Multicast><tt:SessionTimeout>PT0H1M5S</tt:SessionTimeout></tt:VideoEncoderConfiguration><tt:VideoAnalyticsConfiguration token="VideoAnalyticsToken"><tt:Name>VideoAnalyticsName</tt:Name><tt:UseCount>2</tt:UseCount><tt:AnalyticsEngineConfiguration><tt:AnalyticsModule Name="MyCellMotionModule" Type="tt:CellMotionEngine"><tt:Parameters><tt:SimpleItem Value="medium" Name="Sensitivity"></tt:SimpleItem><tt:SimpleItem Value="on" Name="Enabled"></tt:SimpleItem><tt:ElementItem Name="Layout"><tt:CellLayout Rows="18" Columns="22"><tt:Transformation><tt:Translate y="-1" x="-1"></tt:Translate><tt:Scale y="0.109999999" x="0.0900000036"></tt:Scale></tt:Transformation></tt:CellLayout></tt:ElementItem></tt:Parameters></tt:AnalyticsModule><tt:AnalyticsModule Name="MyTamperDetecModule" Type="tt:TamperEngine"><tt:Parameters><tt:SimpleItem Value="medium" Name="Sensitivity"></tt:SimpleItem><tt:SimpleItem Value="off" Name="Enabled"></tt:SimpleItem></tt:Parameters></tt:AnalyticsModule></tt:AnalyticsEngineConfiguration><tt:RuleEngineConfiguration><tt:Rule Name="MyMotionDetectorRule" Type="tt:CellMotionDetector"><tt:Parameters><tt:SimpleItem Value="[ { &quot;region_info_1&quot;: { &quot;.name&quot;: &quot;region_info_1&quot;, &quot;.type&quot;: &quot;region_info&quot;, &quot;x_coor&quot;: &quot;0&quot;, &quot;y_coor&quot;: &quot;0&quot;, &quot;height&quot;: &quot;10000&quot;, &quot;.index&quot;: 1, &quot;.anonymous&quot;: false, &quot;width&quot;: &quot;10000&quot; } } ]" Name="ActiveCells"></tt:SimpleItem></tt:Parameters></tt:Rule><tt:Rule Name="MyTamperDetectorRule" Type="tt:TamperDetector"><tt:Parameters></tt:Parameters></tt:Rule></tt:RuleEngineConfiguration></tt:VideoAnalyticsConfiguration></trt:Profiles></trt:GetProfilesResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>
+
+
+<?xml version="1.0" encoding="utf-8"?>
+
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope" xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsdd="http://schemas.xmlsoap.org/ws/2005/04/discovery" xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsa5="http://www.w3.org/2005/08/addressing" xmlns:xmime="http://tempuri.org/xmime.xsd" xmlns:xop="http://www.w3.org/2004/08/xop/include" xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2" xmlns:wstop="http://docs.oasis-open.org/wsn/t-1" xmlns:wsrfr="http://docs.oasis-open.org/wsrf/r-2" xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2" xmlns:tt="http://www.onvif.org/ver10/schema" xmlns:ter="http://www.onvif.org/ver10/error" xmlns:tns1="http://www.onvif.org/ver10/topics" xmlns:tds="http://www.onvif.org/ver10/device/wsdl" xmlns:trt="http://www.onvif.org/ver10/media/wsdl" xmlns:tev="http://www.onvif.org/ver10/events/wsdl" xmlns:tdn="http://www.onvif.org/ver10/network/wsdl" xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl" xmlns:trp="http://www.onvif.org/ver10/replay/wsdl" xmlns:tan="http://www.onvif.org/ver20/analytics/wsdl">
+  <SOAP-ENV:Header/>
+  <SOAP-ENV:Body>
+    <trt:GetProfilesResponse>
+      <trt:Profiles fixed="true" token="profile_1">
+        <tt:Name>mainStream</tt:Name>
+        <tt:VideoSourceConfiguration token="vsconf">
+          <tt:Name>vsconf</tt:Name>
+          <tt:UseCount>2</tt:UseCount>
+          <tt:SourceToken>raw_vs1</tt:SourceToken>
+          <tt:Bounds height="1080" width="1920" y="0" x="0"/>
+        </tt:VideoSourceConfiguration>
+        <tt:VideoEncoderConfiguration token="main">
+          <tt:Name>VideoEncoder_1</tt:Name>
+          <tt:UseCount>1</tt:UseCount>
+          <tt:Encoding>H264</tt:Encoding>
+          <tt:Resolution>
+            <tt:Width>1920</tt:Width>
+            <tt:Height>1080</tt:Height>
+          </tt:Resolution>
+          <tt:Quality>3</tt:Quality>
+          <tt:RateControl>
+            <tt:FrameRateLimit>20</tt:FrameRateLimit>
+            <tt:EncodingInterval>1</tt:EncodingInterval>
+            <tt:BitrateLimit>4096</tt:BitrateLimit>
+          </tt:RateControl>
+          <tt:H264>
+            <tt:GovLength>25</tt:GovLength>
+            <tt:H264Profile>Main</tt:H264Profile>
+          </tt:H264>
+          <tt:Multicast>
+            <tt:Address>
+              <tt:Type>IPv4</tt:Type>
+              <tt:IPv4Address>224.0.1.0</tt:IPv4Address>
+            </tt:Address>
+            <tt:Port>10000</tt:Port>
+            <tt:TTL>64</tt:TTL>
+            <tt:AutoStart>false</tt:AutoStart>
+          </tt:Multicast>
+          <tt:SessionTimeout>PT0H1M5S</tt:SessionTimeout>
+        </tt:VideoEncoderConfiguration>
+        <tt:VideoAnalyticsConfiguration token="VideoAnalyticsToken">
+          <tt:Name>VideoAnalyticsName</tt:Name>
+          <tt:UseCount>2</tt:UseCount>
+          <tt:AnalyticsEngineConfiguration>
+            <tt:AnalyticsModule Name="MyCellMotionModule" Type="tt:CellMotionEngine">
+              <tt:Parameters>
+                <tt:SimpleItem Value="medium" Name="Sensitivity"/>
+                <tt:SimpleItem Value="on" Name="Enabled"/>
+                <tt:ElementItem Name="Layout">
+                  <tt:CellLayout Rows="18" Columns="22">
+                    <tt:Transformation>
+                      <tt:Translate y="-1" x="-1"/>
+                      <tt:Scale y="0.109999999" x="0.0900000036"/>
+                    </tt:Transformation>
+                  </tt:CellLayout>
+                </tt:ElementItem>
+              </tt:Parameters>
+            </tt:AnalyticsModule>
+            <tt:AnalyticsModule Name="MyTamperDetecModule" Type="tt:TamperEngine">
+              <tt:Parameters>
+                <tt:SimpleItem Value="medium" Name="Sensitivity"/>
+                <tt:SimpleItem Value="off" Name="Enabled"/>
+              </tt:Parameters>
+            </tt:AnalyticsModule>
+          </tt:AnalyticsEngineConfiguration>
+          <tt:RuleEngineConfiguration>
+            <tt:Rule Name="MyMotionDetectorRule" Type="tt:CellMotionDetector">
+              <tt:Parameters>
+                <tt:SimpleItem Value="[ { &quot;region_info_1&quot;: { &quot;.name&quot;: &quot;region_info_1&quot;, &quot;.type&quot;: &quot;region_info&quot;, &quot;x_coor&quot;: &quot;0&quot;, &quot;y_coor&quot;: &quot;0&quot;, &quot;height&quot;: &quot;10000&quot;, &quot;.index&quot;: 1, &quot;.anonymous&quot;: false, &quot;width&quot;: &quot;10000&quot; } } ]" Name="ActiveCells"/>
+              </tt:Parameters>
+            </tt:Rule>
+            <tt:Rule Name="MyTamperDetectorRule" Type="tt:TamperDetector">
+              <tt:Parameters/>
+            </tt:Rule>
+          </tt:RuleEngineConfiguration>
+        </tt:VideoAnalyticsConfiguration>
+      </trt:Profiles>
+      <trt:Profiles fixed="true" token="profile_2">
+        <tt:Name>minorStream</tt:Name>
+        <tt:VideoSourceConfiguration token="vsconf">
+          <tt:Name>vsconf</tt:Name>
+          <tt:UseCount>2</tt:UseCount>
+          <tt:SourceToken>raw_vs1</tt:SourceToken>
+          <tt:Bounds height="1080" width="1920" y="0" x="0"/>
+        </tt:VideoSourceConfiguration>
+        <tt:VideoEncoderConfiguration token="minor">
+          <tt:Name>VideoEncoder_2</tt:Name>
+          <tt:UseCount>1</tt:UseCount>
+          <tt:Encoding>H264</tt:Encoding>
+          <tt:Resolution>
+            <tt:Width>640</tt:Width>
+            <tt:Height>480</tt:Height>
+          </tt:Resolution>
+          <tt:Quality>3</tt:Quality>
+          <tt:RateControl>
+            <tt:FrameRateLimit>20</tt:FrameRateLimit>
+            <tt:EncodingInterval>1</tt:EncodingInterval>
+            <tt:BitrateLimit>512</tt:BitrateLimit>
+          </tt:RateControl>
+          <tt:H264>
+            <tt:GovLength>25</tt:GovLength>
+            <tt:H264Profile>Main</tt:H264Profile>
+          </tt:H264>
+          <tt:Multicast>
+            <tt:Address>
+              <tt:Type>IPv4</tt:Type>
+              <tt:IPv4Address>224.0.1.0</tt:IPv4Address>
+            </tt:Address>
+            <tt:Port>10002</tt:Port>
+            <tt:TTL>64</tt:TTL>
+            <tt:AutoStart>false</tt:AutoStart>
+          </tt:Multicast>
+          <tt:SessionTimeout>PT0H1M5S</tt:SessionTimeout>
+        </tt:VideoEncoderConfiguration>
+        <tt:VideoAnalyticsConfiguration token="VideoAnalyticsToken">
+          <tt:Name>VideoAnalyticsName</tt:Name>
+          <tt:UseCount>2</tt:UseCount>
+          <tt:AnalyticsEngineConfiguration>
+            <tt:AnalyticsModule Name="MyCellMotionModule" Type="tt:CellMotionEngine">
+              <tt:Parameters>
+                <tt:SimpleItem Value="medium" Name="Sensitivity"/>
+                <tt:SimpleItem Value="on" Name="Enabled"/>
+                <tt:ElementItem Name="Layout">
+                  <tt:CellLayout Rows="18" Columns="22">
+                    <tt:Transformation>
+                      <tt:Translate y="-1" x="-1"/>
+                      <tt:Scale y="0.109999999" x="0.0900000036"/>
+                    </tt:Transformation>
+                  </tt:CellLayout>
+                </tt:ElementItem>
+              </tt:Parameters>
+            </tt:AnalyticsModule>
+            <tt:AnalyticsModule Name="MyTamperDetecModule" Type="tt:TamperEngine">
+              <tt:Parameters>
+                <tt:SimpleItem Value="medium" Name="Sensitivity"/>
+                <tt:SimpleItem Value="off" Name="Enabled"/>
+              </tt:Parameters>
+            </tt:AnalyticsModule>
+          </tt:AnalyticsEngineConfiguration>
+          <tt:RuleEngineConfiguration>
+            <tt:Rule Name="MyMotionDetectorRule" Type="tt:CellMotionDetector">
+              <tt:Parameters>
+                <tt:SimpleItem Value="[ { &quot;region_info_1&quot;: { &quot;.name&quot;: &quot;region_info_1&quot;, &quot;.type&quot;: &quot;region_info&quot;, &quot;x_coor&quot;: &quot;0&quot;, &quot;y_coor&quot;: &quot;0&quot;, &quot;height&quot;: &quot;10000&quot;, &quot;.index&quot;: 1, &quot;.anonymous&quot;: false, &quot;width&quot;: &quot;10000&quot; } } ]" Name="ActiveCells"/>
+              </tt:Parameters>
+            </tt:Rule>
+            <tt:Rule Name="MyTamperDetectorRule" Type="tt:TamperDetector">
+              <tt:Parameters/>
+            </tt:Rule>
+          </tt:RuleEngineConfiguration>
+        </tt:VideoAnalyticsConfiguration>
+      </trt:Profiles>
+    </trt:GetProfilesResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
