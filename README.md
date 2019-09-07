@@ -264,7 +264,7 @@ find方法
                  .password(yourPassword)
                  .httpRequester(new YourHttpRequester());
                  .login();
-    }catch(Exception e){
+    }catch(Exception e){}
 
 [返回目录](#目录)
 
@@ -272,21 +272,26 @@ find方法
 
 loginStrategy为登录策略; 指定使用何种登录策略去登录并获取设备信息; 默认使用``GetCapabilitiesStrategy``
 
+指定loginStrategy
+
+	try{
+    OnvifDevice device = new OnvifDevice.Builder()
+             .host(yourHost)
+             .username(yourUsername)
+             .password(yourPassword)
+             .httpRequester(new YourHttpRequester());
+			 .loginStrategy(new GetCapabilitiesStrategy()); 
+			  // loginStrategy(new GetServicesStrategy()); 
+             .login();
+    }catch(Exception e){}
+
 登录摄像头时有两种策略<br/>, 两种都可以正确获取到设备信息
 
-<table border="0" cellpadding="0" cellspacing="0" >
-	<tr>
-		<td>
-			GetCapabilities:<br/>
-			![getCapabilities](onviflibrary/pics/getCapabilities.png)
-		</td>
-	    <td>
-			GetServices<br/>
-			![getServices](onviflibrary/pics/getServices.png)
-		</td>
-    </tr>
-</table>
+* GetCapabilities<br/>
+![getCapabilities](onviflibrary/pics/getCapabilities.png)
 
+* GetServices<br/>
+![getServices](onviflibrary/pics/getServices.png)
 
 [返回目录](#目录)
 
