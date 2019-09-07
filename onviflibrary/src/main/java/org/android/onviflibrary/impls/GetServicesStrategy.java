@@ -4,19 +4,16 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.android.onviflibrary.IHttpRequester;
-import org.android.onviflibrary.IOnvifDeviceRequestHandler;
+import org.android.onviflibrary.IOnvifDeviceLoginStrategy;
 import org.android.onviflibrary.MediaProfile;
 import org.android.onviflibrary.OnvifDevice;
 import org.android.onviflibrary.OnvifRequest;
 import org.android.onviflibrary.OnvifResponse;
-import org.android.onviflibrary.exception.AuthenticateException;
-import org.android.onviflibrary.exception.ParseException;
-import org.android.onviflibrary.exception.RequestException;
 import org.android.onviflibrary.finder.OnvifDiscoverer;
 import org.android.onviflibrary.finder.OnvifFinder;
-import org.android.onviflibrary.req.GetCapabilitiesOnvifRequest;
 import org.android.onviflibrary.req.GetDeviceInformationOnvifRequest;
 import org.android.onviflibrary.req.GetProfilesOnvifRequest;
+import org.android.onviflibrary.req.GetServiceOnvifRequest;
 import org.android.onviflibrary.req.GetStreamUriOnvifRequest;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -28,7 +25,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 
-public class GetCapabilitiesRequestHandler implements IOnvifDeviceRequestHandler {
+public class GetServicesStrategy implements IOnvifDeviceLoginStrategy {
     private static final String TAG = "DefaultOnvifDeviceReque";
 
     @Override
@@ -36,7 +33,7 @@ public class GetCapabilitiesRequestHandler implements IOnvifDeviceRequestHandler
                           IHttpRequester<OnvifRequest, OnvifResponse> httpRequester) throws Exception {
 
         // GetCapabilities
-        getCapabilities(device, httpRequester);
+        getServices(device, httpRequester);
 
         // GetDeviceInformation
         getDeviceInformation(device, httpRequester);
@@ -56,6 +53,89 @@ public class GetCapabilitiesRequestHandler implements IOnvifDeviceRequestHandler
                             "rtsp://" + device.getUsername() + ":" + device.getPassword() + "@"));
         }
 
+    }
+
+    private void getServices(OnvifDevice device, IHttpRequester<OnvifRequest, OnvifResponse> httpRequester) throws Exception {
+        // getUrl; headers; contentType;
+        String getGetServicesUrl = TextUtils.isEmpty(device.getGetServicesUrl()) ?
+                String.format(Locale.CHINA, OnvifDevice.DEFAULT_FORMAT_URL, device.getHost(), device.getPort()) : device.getGetServicesUrl();
+        GetServiceOnvifRequest request =
+                new GetServiceOnvifRequest(getGetServicesUrl);
+        OnvifResponse response = httpRequester.accept(request);
+
+
+        int code = response.getCode();
+        if (code != 200) {
+            OnvifFinder onvifFinder = new OnvifFinder(device.getHost(), 1);
+            List<OnvifDiscoverer> onvifDiscovererList = onvifFinder.find();
+            if (onvifDiscovererList.size() == 0) {
+                throw new IllegalStateException("No Host " + device.getHost() + " Onvif Device");
+            }
+            OnvifDiscoverer onvifDiscoverer = onvifDiscovererList.get(0);
+            URL url = new URL(onvifDiscoverer.getAddress());
+            int port = url.getPort();
+            device.setPort(port);
+            request =
+                    new GetServiceOnvifRequest(onvifDiscoverer.getAddress());
+            response = httpRequester.accept(request);
+        }
+
+        if (response.getCode() != 200) {
+            throw new IllegalStateException("Get Onvif Services Fail With Code " + response.getCode() + ": " + response.getResponseMessage());
+        }
+        parseGetServicesResponse(response, device);
+    }
+
+    private void parseGetServicesResponse(OnvifResponse response, OnvifDevice device) throws XmlPullParserException, IOException {
+        XmlPullParserFactory parserFactory = XmlPullParserFactory.newInstance();
+        parserFactory.setNamespaceAware(true);
+        XmlPullParser xmlPullParser = parserFactory.newPullParser();
+        xmlPullParser.setInput(new StringReader(response.getMessage()));
+        int eventType = xmlPullParser.getEventType();
+
+        /*
+        <tds:Service>
+        <tds:Namespace>http://www.onvif.org/ver10/media/wsdl</tds:Namespace>
+        <tds:XAddr>http://192.168.1.86:2020/onvif/service</tds:XAddr>
+        <tds:Version>
+          <tt:Major>2</tt:Major>
+          <tt:Minor>20</tt:Minor>
+        </tds:Version>
+      </tds:Service>
+         */
+
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+            if (eventType == XmlPullParser.START_TAG && xmlPullParser.getName().equals("Service")) {
+                eventType = xmlPullParser.next();
+                String namespace = null;
+                String xAddr = null;
+                while (!(eventType == XmlPullParser.END_TAG && xmlPullParser.getName().equals("Service"))) {
+                    if (eventType == XmlPullParser.START_TAG) {
+                        String name = xmlPullParser.getName();
+                        if (name.equals("Namespace")) {
+                            xmlPullParser.next();
+                            namespace = xmlPullParser.getText();
+                        } else if (name.equals("XAddr")) {
+                            xmlPullParser.next();
+                            xAddr = xmlPullParser.getText();
+                        }
+                        if (!TextUtils.isEmpty(namespace) && !TextUtils.isEmpty(xAddr)) {
+                            namespace = namespace.trim();
+                            xAddr = xAddr.trim();
+                            break;
+                        }
+                    }
+                    eventType = xmlPullParser.next();
+                }
+                if (GetProfilesOnvifRequest.NAMESPACE.equals(namespace)) {
+                    device.setGetStreamUriUrl(xAddr);
+                    device.setGetProfilesUrl(xAddr);
+                    return;
+                }
+            }
+            eventType = xmlPullParser.next();
+
+        }
     }
 
     /**
@@ -83,11 +163,7 @@ public class GetCapabilitiesRequestHandler implements IOnvifDeviceRequestHandler
         GetStreamUriOnvifRequest req = new GetStreamUriOnvifRequest(
                 getProfileUrl, device.getUsername(), device.getPassword(), false, profile.getToken());
         OnvifResponse onvifResponse = doRequest(req, httpRequester);
-        try {
-            parseGetStreamUri(profile, onvifResponse);
-        } catch (Exception e) {
-            throw new ParseException("Get Media Profile Stream Url Failed", e);
-        }
+        parseGetStreamUri(profile, onvifResponse);
     }
 
     private void parseGetStreamUri(MediaProfile mediaProfile, OnvifResponse getStreamURIResponse) throws XmlPullParserException, IOException {
@@ -110,13 +186,7 @@ public class GetCapabilitiesRequestHandler implements IOnvifDeviceRequestHandler
         String getProfileUrl = TextUtils.isEmpty(device.getGetProfilesUrl()) ?
                 String.format(Locale.CHINA, OnvifDevice.DEFAULT_FORMAT_URL, device.getHost(), device.getPort()) : device.getGetProfilesUrl();
         GetProfilesOnvifRequest request = new GetProfilesOnvifRequest(getProfileUrl, device.getUsername(), device.getPassword(), false);
-        OnvifResponse getProfilesResponse = doRequest(request, httpRequester);
-        try {
-            parseGetProfile(device, getProfilesResponse);
-        } catch (Exception e) {
-            throw new ParseException("Get Profile Failed", e);
-        }
-
+        parseGetProfile(device, doRequest(request, httpRequester));
     }
 
     private void parseGetProfile(OnvifDevice onvifDevice, OnvifResponse getProfilesResponse) throws Exception {
@@ -276,23 +346,30 @@ public class GetCapabilitiesRequestHandler implements IOnvifDeviceRequestHandler
     }
 
     private OnvifResponse doRequest(OnvifRequest request, IHttpRequester<OnvifRequest, OnvifResponse> httpRequester) throws Exception {
+        Log.d(TAG, "doRequest: " + request.getUrl() + ", " + request.getContent());
         OnvifResponse onvifResponse = httpRequester.accept(request);
         int code = onvifResponse.getCode();
+        /*Log.d(TAG, "doRequest: 1 " + request.getUrl()
+                + "\n" + request.getContent()
+                + "\n" + onvifResponse.getCode()
+                + "\n" + onvifResponse.getResponseMessage()
+                + "\n" + onvifResponse.getMessage());*/
         // 需要Digest验证
         if (code == 401) {
             String authenticate = onvifResponse.header("WWW-Authenticate");
             request.appendHeaders("Authorization", request.getDigestHeader(authenticate));
             onvifResponse = httpRequester.accept(request);
         } else if (code != 200) {
-            // 尝试ES-UsernameToken验证
             request.setWs_UsernameTokenContent(true);
             onvifResponse = httpRequester.accept(request);
         }
-
-        if (onvifResponse.getCode() == 401) {
-            throw new AuthenticateException("Authenticate Failed");
-        } else if (onvifResponse.getCode() != 200) {
-            throw new RequestException("Get " + request.getClass().getSimpleName() + " Fail With Code " + onvifResponse.getCode() + ": " + onvifResponse.getResponseMessage());
+       /* Log.d(TAG, "doRequest: 2 " + request.getUrl()
+                + "\n" + request.getContent()
+                + "\n" + onvifResponse.getCode()
+                + "\n" + onvifResponse.getResponseMessage()
+                + "\n" + onvifResponse.getMessage());*/
+        if (onvifResponse.getCode() != 200) {
+            throw new IllegalStateException("Get " + request.getClass().getSimpleName() + " Fail With Code " + onvifResponse.getCode() + ": " + onvifResponse.getResponseMessage());
         }
 
         return onvifResponse;
@@ -304,12 +381,7 @@ public class GetCapabilitiesRequestHandler implements IOnvifDeviceRequestHandler
         GetDeviceInformationOnvifRequest request = new GetDeviceInformationOnvifRequest(getDeviceInformationUrl, device.getUsername(), device.getPassword(), false);
 
 
-        OnvifResponse onvifResponse = doRequest(request, httpRequester);
-        try {
-            parseGetDeviceInfomation(device, onvifResponse);
-        } catch (Exception e) {
-            throw new ParseException("Get Device Information Failed", e);
-        }
+        parseGetDeviceInfomation(device, doRequest(request, httpRequester));
 
     }
 
@@ -348,84 +420,6 @@ public class GetCapabilitiesRequestHandler implements IOnvifDeviceRequestHandler
 
             eventType = xmlPullParser.next();
 
-        }
-    }
-
-    private void getCapabilities(OnvifDevice device,
-                                 IHttpRequester<OnvifRequest, OnvifResponse> httpRequester) throws Exception {
-
-        // getUrl; headers; contentType;
-        String getCapabilitiesUrl = TextUtils.isEmpty(device.getGetCapabilitiesUrl()) ?
-                String.format(Locale.CHINA, OnvifDevice.DEFAULT_FORMAT_URL, device.getHost(), device.getPort()) : device.getGetCapabilitiesUrl();
-        GetCapabilitiesOnvifRequest request =
-                new GetCapabilitiesOnvifRequest(
-                        getCapabilitiesUrl,
-                        device.getUsername(),
-                        device.getPassword());
-        OnvifResponse response = httpRequester.accept(request);
-
-        int code = response.getCode();
-        if (code != 200) {
-            OnvifFinder onvifFinder = new OnvifFinder(device.getHost(), 1);
-            List<OnvifDiscoverer> onvifDiscovererList = onvifFinder.find();
-            if (onvifDiscovererList.size() == 0) {
-                throw new RequestException("No discover onvif device with host " + device.getHost());
-            }
-            OnvifDiscoverer onvifDiscoverer = onvifDiscovererList.get(0);
-            URL url = new URL(onvifDiscoverer.getAddress());
-            int port = url.getPort();
-            device.setPort(port);
-            request =
-                    new GetCapabilitiesOnvifRequest(onvifDiscoverer.getAddress(), device.getUsername(), device.getPassword());
-            response = httpRequester.accept(request);
-        }
-
-        if (response.getCode() != 200) {
-            throw new RequestException("Get capabilities failed With code "
-                    + response.getCode()
-                    + ", responseMessage:" + response.getResponseMessage()
-                    + ", errorMsg: " + response.getErrorMessage());
-        }
-        try {
-            parseGetCapabilitiesResponse(response, device);
-        } catch (Exception e) {
-            throw new ParseException("Get Capabilities Parse Failed", e);
-        }
-    }
-
-    private void parseGetCapabilitiesResponse(OnvifResponse response, OnvifDevice device) {
-        try {
-            XmlPullParserFactory parserFactory = XmlPullParserFactory.newInstance();
-            parserFactory.setNamespaceAware(true);
-            XmlPullParser xmlPullParser = parserFactory.newPullParser();
-            xmlPullParser.setInput(new StringReader(response.getMessage()));
-            int eventType = xmlPullParser.getEventType();
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                if (eventType == XmlPullParser.START_TAG) {
-                    String tagName = xmlPullParser.getName();
-
-                    if (!"Media".equals(tagName)) {
-                        eventType = xmlPullParser.next();
-                        continue;
-                    }
-
-                    // 非结束标签和结束标签name为Media
-                    while (!(eventType == XmlPullParser.END_TAG && ("Media".equals(xmlPullParser.getName())))) {
-                        if (eventType == XmlPullParser.START_TAG && "XAddr".equals(xmlPullParser.getName())) {
-                            xmlPullParser.next();
-                            String mediaUrl = xmlPullParser.getText();
-                            device.setGetProfilesUrl(mediaUrl.trim());
-                            device.setGetStreamUriUrl(mediaUrl);
-                            return;
-                        }
-                        eventType = xmlPullParser.next();
-                    }
-                }
-
-                eventType = xmlPullParser.next();
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("parse GetCapabilities Resonse exception", e);
         }
     }
 }

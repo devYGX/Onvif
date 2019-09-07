@@ -2,8 +2,8 @@ package org.android.onviflibrary;
 
 import android.util.Log;
 
-import org.android.onviflibrary.impls.GetCapabilitiesRequestHandler;
-import org.android.onviflibrary.impls.GetServicesRequestHandler;
+import org.android.onviflibrary.impls.GetCapabilitiesStrategy;
+import org.android.onviflibrary.impls.GetServicesStrategy;
 import org.android.onviflibrary.requester.DefaultOnvifRequester;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +67,7 @@ public class OnvifDeviceTest2 {
                    .username(onvifAccount.username)
                    .password(onvifAccount.password)
                    .httpRequester(new DefaultOnvifRequester())
-                   .requestHandler(new GetServicesRequestHandler())
+                   .loginStrategy(new GetServicesStrategy())
                    .login();
            Log.e(TAG, "getServicesLogin: " + device);
        }
@@ -78,7 +78,7 @@ public class OnvifDeviceTest2 {
                 .username(onvifAccount.username)
                 .password(onvifAccount.password)
                 .httpRequester(new DefaultOnvifRequester())
-                .requestHandler(new GetCapabilitiesRequestHandler())
+                .loginStrategy(new GetCapabilitiesStrategy())
                 .login();
 
         String fwVersion = device.getFwVersion();

@@ -1,8 +1,8 @@
 Onvif
 ======
 
-创建时间 | 2019-08-26 | |
---- | --- | ---
+创建时间 | 2019-08-26 | 
+--- | --- 
 版本号 | 1.0.0
 修改时间 | 修改内容
 2018-08-26 | 添加:<br/>[OnvifLibrary](#OnvifLibrary)
@@ -16,7 +16,9 @@ Onvif
 		* [调用API](#调用API)
 		* [OnvifDiscoverer类](#OnvifDiscoverer_API)
 		* [OnvifFinder类](#OnvifFinder)
-	* [登录IPC并获取设备信息](#OnvifDevice_API)
+	* [登录IPC并获取设备信息](#OnvifDevice)
+	    * [基本调用](#OnvifDevice_API)
+	    * [自定义HttpRequest工具](#自定义HttpRequest工具)
 	* [测试结果](#测试结果)
 
 =======
@@ -98,11 +100,14 @@ OnvifDiscoverer说明
 
 OnvifFinder是一个Onvif IPC设备的寻找器, 它重载了多个构造方法和find方法来允许用户自定义自己的查询方式
 
-构造器参数</br>
+构造器参数
+
 参数 | 参数类型 | 参数说明
-target | String | 目标地址;<br/> 默认是``239.255.255.250``这个组播地址;<br/> 也可以传指定的IP地址;
+---|---|---
+target | String | 目标地址;<br/> 默认是``239.255.255.250``这个组播地址; 也可以传指定的IP地址;
 count | int | 获取的设备个数;<br/> 默认是Integer.MAX_VALUE, 表示获取越多越好;</br> 当获取到的IPC设备个数大于等于count后, 就算还没达到timeoutMillis, find()方法也会立即结束执行;
 returnMillis | long | 返回时间, 表示阻塞获取IPC设备多少毫秒后, 结束获取并返回获取到的设备列表; 默认值是20 * 000, 20秒;
+
 
 find方法
 
@@ -141,7 +146,9 @@ find方法
 
 [返回目录](#目录)
 
-#### <span id="OnvifDevice_API">登录IPC并获取设备信息</span>
+#### <span id="OnvifDevice">登录IPC并获取设备信息</span>
+
+##### <span id="OnvifDevice_API">基本使用</span>
 
 登录IPC
 
@@ -168,6 +175,22 @@ find方法
 			// 其他错误; 建议检查网络, 以及使用Onvif Device Test Tools工具测试摄像头
 		}
 	}
+	
+注意事项
+
+在不传httpRequester的时候, 默认使用的是DefaultOnvifRequester这个类, 它是基于HttpUrlConnection实现的;<br/>
+在android9.0及以上的系统版本, 默认不允许直接使用http明文请求; 如果想要允许, 可以通过在AndroidManifest.xml的application中配置以下属性解决
+
+
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="org.android.onviflibrary">
+        ...
+        <application 
+            android:usesCleartextTraffic="true" 
+            >
+        </application>
+        ... 
+    </manifest>
 
 登录成功
 
@@ -209,6 +232,64 @@ find方法
 
 [返回目录](#目录)
 
+##### <span id="自定义HttpRequest工具">自定义HttpRequest工具</span>
+
+实现IHttpRequester接口
+
+    public class YourHttpRequester implements IHttpRequester<OnvifRequest, OnvifResponse> {
+        
+        // 在开始调用OnvifDevice.Builder#login()方法的时候调用, 表示准备开始发起请求
+        @Override public void syncStart() {}
+        // 在执行结束OnvifDevice.Builder#login()方法的时候调用, 表示请求已结束
+        @Override public void syncStop() {}
+        
+        // 发起请求的时候, 可能会多次调用;
+        @Override public OnvifResponse accept(OnvifRequest req) throws Exception{
+            
+            String targetUrl = req.getUrl();
+            String content = req.getContent();
+            for (Map.Entry<String, String> entry : req.getHeaders().entrySet()) {
+                // todo 
+                String headerKey = entry.getKey();
+                String headerValue = entry.getValue();
+            }
+        }
+
+使用自定义的HttpRequester
+
+    try{
+    	OnvifDevice device = new OnvifDevice.Builder()
+                 .host(yourHost)
+                 .username(yourUsername)
+                 .password(yourPassword)
+                 .httpRequester(new YourHttpRequester());
+                 .login();
+    }catch(Exception e){
+
+[返回目录](#目录)
+
+##### <span id="loginStrategy说明">loginStrategy说明</span>
+
+loginStrategy为登录策略; 指定使用何种登录策略去登录并获取设备信息; 默认使用``GetCapabilitiesStrategy``
+
+登录摄像头时有两种策略<br/>, 两种都可以正确获取到设备信息
+
+<table border="0" cellpadding="0" cellspacing="0" >
+	<tr>
+		<td>
+			GetCapabilities:<br/>
+			![getCapabilities](onviflibrary/pics/getCapabilities.png)
+		</td>
+	    <td>
+			GetServices<br/>
+			![getServices](onviflibrary/pics/getServices.png)
+		</td>
+    </tr>
+</table>
+
+
+[返回目录](#目录)
+
 #### <span id="测试结果">测试结果</span>
 
 获取Onvif设备时需要兼容三个问题(暂时只发现这三个):<br/>
@@ -219,14 +300,10 @@ find方法
 
 针对以上三个问题, OnvifLibrary已经给出了解决方案:<br/>
 
-1. 先尝试使用 http://ip:80/onvif/device_service 去登录摄像头; 如果登录失败; 再通过OnvifFinder去获取摄像头的device service url(OnvifDisconverer#address), 目前已知可以兼容6款摄像头;
-2. 先尝试使用无用户名和密码登录; 根据IPC的响应结果选择是否使用用户名和密码登录; 目前已兼容6款摄像头
-3. 建议在拉流的时候采用格式: rtsp://{usn}:{psw}@{rtspurl}, 例如: rtsp://admin:password@192.168.1.86:554/stream1
-
-
 以下是测试的6款摄像头及兼容情况<br/>
 
 摄像头型号  | 密码和用户名是否必须正确 
+--- | ---
 华安  | 否
 火力牛  | 否
 大华  | 否

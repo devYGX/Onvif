@@ -3,7 +3,7 @@ package org.android.onviflibrary;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
-import org.android.onviflibrary.impls.GetCapabilitiesRequestHandler;
+import org.android.onviflibrary.impls.GetCapabilitiesStrategy;
 import org.android.onviflibrary.requester.DefaultOnvifRequester;
 
 import java.util.ArrayList;
@@ -156,7 +156,7 @@ public class OnvifDevice {
 
         private final OnvifDevice onvifDevice;
         private IHttpRequester<OnvifRequest, OnvifResponse> requester;
-        private IOnvifDeviceRequestHandler loginHandler;
+        private IOnvifDeviceLoginStrategy loginHandler;
 
         public Builder() {
             onvifDevice = new OnvifDevice();
@@ -182,7 +182,7 @@ public class OnvifDevice {
             return this;
         }
 
-        public Builder requestHandler(@Nullable IOnvifDeviceRequestHandler loginHandler) {
+        public Builder loginStrategy(@Nullable IOnvifDeviceLoginStrategy loginHandler) {
             this.loginHandler = loginHandler;
             return this;
         }
@@ -202,7 +202,7 @@ public class OnvifDevice {
 
 
             if (requester == null) requester = new DefaultOnvifRequester();
-            if (loginHandler == null) loginHandler = new GetCapabilitiesRequestHandler();
+            if (loginHandler == null) loginHandler = new GetCapabilitiesStrategy();
 
             requester.syncStart();
             try {
