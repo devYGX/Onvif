@@ -19,6 +19,7 @@ Onvif
 	* [登录IPC并获取设备信息](#OnvifDevice)
 	    * [基本调用](#OnvifDevice_API)
 	    * [自定义HttpRequest工具](#自定义HttpRequest工具)
+	    * [loginStrategy说明](#loginStrategy说明)
 	* [测试结果](#测试结果)
 
 =======
