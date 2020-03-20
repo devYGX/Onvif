@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">Onvif</string>
+    <string name="app_name">OnvifSample</string>
+    <string name="host">host</string>
+    <string name="username">username</string>
+    <string name="password">password</string>
+    <string name="scan_onvif_device">Scan Onvif Device</string>
 </resources>
