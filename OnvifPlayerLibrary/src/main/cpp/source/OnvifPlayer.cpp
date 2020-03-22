@@ -16,6 +16,10 @@ OnvifPlayer::OnvifPlayer(JavaVM *jvm) :
     pthread_cond_init(&loopStop, NULL);
     pthread_mutex_init(&observer_lock, NULL);
 
+    avcodec_register_all();
+    av_register_all();
+
+    avformat_network_init();
 }
 
 OnvifPlayer::~OnvifPlayer() {
@@ -24,6 +28,7 @@ OnvifPlayer::~OnvifPlayer() {
     pthread_mutex_destroy(&window_lock);
     pthread_cond_destroy(&loopStop);
     pthread_mutex_destroy(&observer_lock);
+    LOGD("~OnvifPlayer");
 
 }
 
@@ -83,8 +88,15 @@ int OnvifPlayer::prepare(JNIEnv *env) {
     AVPixelFormat dstFormat = AV_PIX_FMT_RGBA;
     AVPixelFormat callback_dstFormat = AV_PIX_FMT_NV21;
     const char *video_path;
+    AVDictionary *options = NULL;
 
     pthread_mutex_lock(&lock);
+
+    if (!inited) {
+        avcodec_register_all();
+        avformat_network_init();
+        inited = true;
+    }
 
     if (state != STATE_DEFAULT) {
         ret = STATE_NOT_DEFAULT;
@@ -96,20 +108,15 @@ int OnvifPlayer::prepare(JNIEnv *env) {
         goto __END;
     }
 
-    avcodec_register_all();
-
-    // 对应avformat_network_deinit(), 在结束播放后必须调用，否则程序会crash, 原因是多线程操作网络；
-    avformat_network_init();
-
     video_path = this->path;
     av_fc = avformat_alloc_context();
     if (av_fc == NULL) {
         ret = AVFC_ALLOC_FAIL;
         goto __FAIL;
     }
-    LOGD("avformat_alloc_context success");
     // 3. 打开文件流
-    ret_avformat_open_input = avformat_open_input(&av_fc, video_path, NULL, NULL);
+    av_dict_set(&options, "rtsp_transport", "tcp", 0);
+    ret_avformat_open_input = avformat_open_input(&av_fc, video_path, NULL, &options);
     if (ret_avformat_open_input != 0) {
         LOGE("open input file failed!");
         ret = OPEN_PATH_FAIL;
@@ -118,6 +125,8 @@ int OnvifPlayer::prepare(JNIEnv *env) {
 
     LOGD("avformat_open_input success %d %s\nav_fc: %d", ret_avformat_open_input, video_path,
          av_fc);
+
+
     // 4. 检索多媒体流的信息, 其结果将会被赋值在av_fc中
     ret = avformat_find_stream_info(av_fc, NULL);
     LOGD("ret %d avformat_find_stream_info 1: ", ret);
@@ -383,6 +392,8 @@ void OnvifPlayer::doLoop() {
     }
     LOGD("prepare detach cur thread");
     jvm->DetachCurrentThread();
+    pthread_detach(pthread_self());
+    readFrameThread = NULL;
     LOGD("end detach cur thread");
 }
 
@@ -415,8 +426,7 @@ int OnvifPlayer::start() {
         ret = CREATE_READ_THREAD_FAIL;
         goto __END;
     }
-
-    pthread_detach(tid);
+    readFrameThread = tid;
     this->state = STATE_PLAYING;
     __END:
     pthread_mutex_unlock(&lock);
@@ -446,18 +456,21 @@ int OnvifPlayer::stop() {
 
 void OnvifPlayer::reset() {
 
+    pthread_t tid;
     pthread_mutex_lock(&lock);
     if (this->state == STATE_DEFAULT) {
         goto __END;
     }
-
     if (this->state == STATE_PLAYING) {
         this->state = STATE_DEFAULT;
         pthread_cond_wait(&loopStop, &lock);
-    } else {
-        this->state = STATE_DEFAULT;
     }
-
+    tid = readFrameThread;
+    LOGD("reset tid: %d", tid);
+    if (tid) {
+        pthread_join(tid, NULL);
+    }
+    LOGD("after join %d %d", readFrameThread, tid);
 
     if (this->avCodecContext) {
         avcodec_free_context(&this->avCodecContext);
@@ -508,7 +521,6 @@ void OnvifPlayer::reset() {
     this->nv21_frame_size = 0;
     this->video_stream_index = 0;
 
-    avformat_network_deinit();
 
     __END:
     pthread_mutex_unlock(&lock);
@@ -516,8 +528,10 @@ void OnvifPlayer::reset() {
 
 void OnvifPlayer::release(JNIEnv *env) {
     this->reset();
+
     pthread_mutex_lock(&lock);
-    LOGD("release state: %d",this->state);
+    if (inited) { avformat_network_deinit(); }
+    LOGD("release state: %d", this->state);
     if (this->path) {
         free(this->path);
         this->path = NULL;
@@ -534,12 +548,21 @@ void OnvifPlayer::release(JNIEnv *env) {
     if (this->onFrameMethodId) {
         this->onFrameMethodId = NULL;
     }
-    if(this->onPlayFinish){this->onPlayFinish = NULL;}
-    if(this->onPlayDisconnected){this->onPlayDisconnected = NULL;}
-    if(this->onPrepare){this->onPrepare = NULL;}
-    if(this->jplayer){ env->DeleteGlobalRef(this->jplayer);this->jplayer = NULL;}
-    if(this->playerObserver){env->DeleteGlobalRef(this->playerObserver);this->playerObserver = NULL;}
-    if(this->observerClass){env->DeleteGlobalRef(this->observerClass);this->observerClass = NULL;}
+    if (this->onPlayFinish) { this->onPlayFinish = NULL; }
+    if (this->onPlayDisconnected) { this->onPlayDisconnected = NULL; }
+    if (this->onPrepare) { this->onPrepare = NULL; }
+    if (this->jplayer) {
+        env->DeleteGlobalRef(this->jplayer);
+        this->jplayer = NULL;
+    }
+    if (this->playerObserver) {
+        env->DeleteGlobalRef(this->playerObserver);
+        this->playerObserver = NULL;
+    }
+    if (this->observerClass) {
+        env->DeleteGlobalRef(this->observerClass);
+        this->observerClass = NULL;
+    }
 
     pthread_mutex_unlock(&lock);
     LOGD("release finish");
@@ -569,6 +592,7 @@ int OnvifPlayer::setFrameCallback(JNIEnv *env, jobject frameCallback) {
 
 void OnvifPlayer::setWindow(ANativeWindow *window) {
     pthread_mutex_lock(&window_lock);
+    LOGD("setWindow start");
 
     if (this->renderWindow != window) {
         if (this->renderWindow != NULL) {
@@ -583,6 +607,7 @@ void OnvifPlayer::setWindow(ANativeWindow *window) {
         }
     }
 
+    LOGD("setWindow end");
     pthread_mutex_unlock(&window_lock);
 }
 
@@ -594,7 +619,7 @@ void OnvifPlayer::setObserver(JNIEnv *env, jobject player, jobject jobserver) {
         jclass ljclass = env->FindClass(OBSERVER_CLASS_NAME);
         if (ljclass) {
             this->observerClass = reinterpret_cast<jclass >(env->NewGlobalRef(ljclass));
-        }else{
+        } else {
             LOGE("class  %s not found!", OBSERVER_CLASS_NAME);
         }
     }

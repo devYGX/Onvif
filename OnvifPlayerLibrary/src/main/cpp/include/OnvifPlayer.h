@@ -74,6 +74,9 @@ private:
     jmethodID onPrepare = NULL;
     jmethodID onPlayDisconnected = NULL;
     jmethodID onPlayFinish = NULL;
+    pthread_t readFrameThread = NULL;
+
+    bool inited = false;
 
 
 public:

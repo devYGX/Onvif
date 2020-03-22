@@ -1,8 +1,10 @@
 package org.android.ffmpeg;
 
+import android.util.Log;
 import android.view.Surface;
 
 public class OnvifPlayer {
+    private static final String TAG = "libonvif";
 
     static {
         System.loadLibrary("onvif_player");
@@ -15,59 +17,50 @@ public class OnvifPlayer {
     }
 
     private native long nativeCreate();
-
     private native int nativeSetPath(long ptr, String path);
-
     private native void nativeSetFrameCallback(long ptr, OnvifStreamCallback streamCallback);
-
     private native void nativeSetSurface(long ptr, Surface surface);
-
     private native int nativePrepare(long ptr);
-
     private native int nativeStart(long ptr);
-
     private native int nativeStop(long ptr);
-
     private native void nativeRelease(long ptr);
-
     private native void nativeReset(long ptr);
-
     private native void nativeSetObserver(long ptr, OnvifPlayerObserver observer);
 
-    public int setPath(String path) {
+    public synchronized int setPath(String path) {
         return nativeSetPath(mPtr, path);
     }
 
-    public void setFrameCallback(OnvifStreamCallback streamCallback) {
+    public synchronized void setFrameCallback(OnvifStreamCallback streamCallback) {
         nativeSetFrameCallback(mPtr, streamCallback);
     }
 
-    public void reset() {
+    public synchronized void reset() {
         nativeReset(mPtr);
     }
 
-    public void setSurface(Surface surface) {
+    public synchronized void setSurface(Surface surface) {
         nativeSetSurface(mPtr, surface);
     }
 
-    public int prepare() {
+    public synchronized int prepare() {
         return nativePrepare(mPtr);
     }
 
-    public int start() {
+    public synchronized int start() {
         return nativeStart(mPtr);
     }
 
-    public int stop() {
+    public synchronized int stop() {
         return nativeStop(mPtr);
     }
 
-    public void release() {
+    public synchronized void release() {
         nativeRelease(mPtr);
         mPtr = 0;
     }
 
-    public void setPlayerObserver(OnvifPlayerObserver observer) {
+    public synchronized void setPlayerObserver(OnvifPlayerObserver observer) {
         nativeSetObserver(mPtr, observer);
     }
 }

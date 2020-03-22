@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -77,16 +78,6 @@ public class OnvifDisplayActivity extends AppCompatActivity implements SurfaceHo
                     @Override
                     public OnvifDevice apply(OnvifDevice.Builder builder) throws Exception {
                         return builder.login();
-                    }
-                })
-                .doOnNext(new Consumer<OnvifDevice>() {
-                    @Override
-                    public void accept(OnvifDevice onvifDevice) throws Exception {
-                        List<MediaProfile> mediaProfiles = onvifDevice.getMediaProfiles();
-                        String onvifMediaStreamUri = mediaProfiles.get(0).getOnvifMediaStreamUri();
-                        onvifPlayer.setPath(onvifMediaStreamUri);
-                        onvifPlayer.prepare();
-                        onvifPlayer.start();
                     }
                 })
                 .subscribeOn(Schedulers.io())
@@ -219,5 +210,8 @@ public class OnvifDisplayActivity extends AppCompatActivity implements SurfaceHo
     @Override
     public void onPlayFinish() {
         Log.d(TAG, "onPlayFinish: ");
+    }
+
+    public void printfStack(View view) {
     }
 }
